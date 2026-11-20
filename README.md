@@ -42,7 +42,7 @@ Neu berechnet wird bei jeder Wertänderung einer Quelle (VM_UPDATE) und bei jede
 ```php
 MZ_Hinzufuegen(int $InstanzID, string $ID, string $Text, int $Stufe); // Stufe 1..3, gleiche ID = ersetzen
 MZ_Entfernen(int $InstanzID, string $ID);                            // true, wenn es die Meldung gab
-MZ_HoleMeldungen(int $InstanzID);                                    // Array aller aktiven Meldungen
+MZ_HoleMeldungen(int $InstanzID);                                    // JSON-Text aller aktiven Meldungen (json_decode)
 MZ_Aktualisieren(int $InstanzID);
 ```
 

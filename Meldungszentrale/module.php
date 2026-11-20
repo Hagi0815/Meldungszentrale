@@ -149,10 +149,10 @@ class Meldungszentrale extends IPSModule
         return $gab;
     }
 
-    /** Alle aktiven Meldungen als Array (Stufe absteigend). */
+    /** Alle aktiven Meldungen als JSON-Text (Stufe absteigend), im Skript: json_decode(MZ_HoleMeldungen($id), true) */
     public function HoleMeldungen()
     {
-        return $this->Sammeln();
+        return json_encode($this->Sammeln());
     }
 
     /** Neu berechnen und Ausgabe-Variablen schreiben. */
