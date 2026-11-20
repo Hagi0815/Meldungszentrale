@@ -449,8 +449,8 @@ class Meldungszentrale extends IPSModule
     private function ChipsHtml(array $liste): string
     {
         $h = '<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;height:100%}'
-            . '.c{display:flex;flex-wrap:nowrap;gap:2vh;height:100vh;align-items:center;font-family:Roboto,Arial,sans-serif;font-weight:bold;font-size:42vh}'
-            . '.c span{white-space:nowrap;background:#2a3442;border:0.12em solid;border-radius:0.6em;padding:0.1em 0.6em;line-height:1.3}</style><div class="c">';
+            . '.c{display:flex;flex-wrap:nowrap;gap:0.4em;height:100vh;align-items:center;overflow:hidden;font-family:Roboto,Arial,sans-serif;font-weight:bold;font-size:56vh}'
+            . '.c span{white-space:nowrap;background:#2a3442;border:0.09em solid;border-radius:0.5em;padding:0 0.6em;line-height:150%;box-sizing:border-box}</style><div class="c">';
         foreach ($liste as $e) {
             $f = $this->Farbe($e['Stufe']);
             $h .= '<span style="color:' . $f . ';border-color:' . $f . '">' . htmlspecialchars($e['Titel']) . '</span>';
@@ -461,7 +461,8 @@ class Meldungszentrale extends IPSModule
     /** Meldungsblöcke der Gruppe: farbiger Rand, Überschrift, „Meldung“ als Text, „Ursache“ und „Abhilfe“ als Laufschrift */
     private function BloeckeHtml(array $liste): string
     {
-        $h = '<style>html,body{margin:0;padding:0;background:transparent;color:#e8edf3;font-family:Roboto,Arial,sans-serif;font-size:3.2vw}'
+        $h = '<style>html,body{margin:0;padding:0;background:transparent;color:#e8edf3;font-family:Roboto,Arial,sans-serif;font-size:3.6vw}'
+            . '@media (min-width:1200px){html,body{font-size:22px}}'
             . '.b{border:0.18em solid;border-radius:0.6em;padding:0.4em 0.7em;margin:0 0 0.6em 0;background:#1c2430}'
             . '.t{font-weight:bold;font-size:1.15em;margin-bottom:0.25em}'
             . '.z{display:flex;align-items:baseline;gap:0.5em;margin-top:0.15em}'
