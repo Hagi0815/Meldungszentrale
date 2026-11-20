@@ -226,8 +226,20 @@ class Meldungszentrale extends IPSModule
         return $liste;
     }
 
-    /** Bedingung: 'eq' = aktiv wenn Wert gleich, 'ne' = aktiv wenn Wert ungleich */
+    /** Bedingung: 'eq' = aktiv wenn Wert gleich, 'ne' = aktiv wenn Wert ungleich. Mehrere Werte mit | trennen (z. B. "|-" = leer oder -) */
     private function IstAktiv(int $vid, string $bedingung, string $wert): bool
+    {
+        $gleich = false;
+        foreach (explode('|', $wert) as $w) {
+            if ($this->Gleich($vid, $w)) {
+                $gleich = true;
+                break;
+            }
+        }
+        return $bedingung === 'eq' ? $gleich : !$gleich;
+    }
+
+    private function Gleich(int $vid, string $wert): bool
     {
         $ist = GetValue($vid);
         switch (IPS_GetVariable($vid)['VariableType']) {
@@ -242,7 +254,7 @@ class Meldungszentrale extends IPSModule
             default:
                 $gleich = (trim((string) $ist) === trim($wert));
         }
-        return $bedingung === 'eq' ? $gleich : !$gleich;
+        return $gleich;
     }
 
     /** Klartext zum Code am Anfang des Werts (z. B. "H08(1018) 13.11. ..." -> "H08"), sonst der Wert selbst */

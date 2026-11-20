@@ -5,5 +5,5 @@
     {"VariableID": 49968, "Text": "Schlafzimmer lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 25481, "Text": "Büro lüften",         "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 43329, "Text": "Bad lüften",          "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
-    {"VariableID": 37965, "Text": "Wartung Heizung: {wert}", "Stufe": 1, "Bedingung": "ne", "Wert": ""}
+    {"VariableID": 37965, "Text": "Wartung Heizung: {wert} – {klartext}", "Stufe": 1, "Bedingung": "ne", "Wert": "|-"}
 ]

@@ -20,7 +20,7 @@
                   "edit": { "type": "Select", "options": [
                       { "caption": "=", "value": "eq" },
                       { "caption": "≠", "value": "ne" } ] } },
-                { "caption": "Wert", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
+                { "caption": "Wert (mehrere mit |)", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },
         {

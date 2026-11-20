@@ -18,6 +18,8 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 - **Quellen**: Liste von Variablen. Je Zeile: Variable, Text, Stufe, Bedingung (aktiv wenn Wert `=` oder `≠`), Vergleichswert.
   - Im Text wird `{wert}` durch den angezeigten Wert der Variable ersetzt (GetValueFormatted).
   - Boolean: Vergleichswert `true`/`false`. Zahlen: z. B. `0`. Text: genauer Vergleich, leer = leerer Text.
+  - Mehrere Vergleichswerte mit `|` trennen: `|-` heißt „leer oder -“.
+- **Klartexte für Codes**: Liste Code → Text, im Text per `{klartext}` (z. B. Buderus-Wartungscodes).
 - **Trennzeichen** (Standard ` · `), **Text wenn keine Meldung** (Standard leer).
 - **Liste (HTMLBox)** optional, **Stummschaltung bei neuer Meldung aufheben** optional.
 
