@@ -208,6 +208,10 @@ class Meldungszentrale extends IPSModule
                 $text = IPS_GetName($vid) . ': {wert}';
             }
             $text = str_replace('{wert}', GetValueFormatted($vid), $text);
+            if (strpos($text, '{code}') !== false) {
+                [$c, $z] = $this->CodeLesen((string) GetValue($vid));
+                $text = str_replace('{code}', $z !== '' ? $c . ' (' . $z . ')' : $c, $text);
+            }
             if (strpos($text, '{klartext}') !== false) {
                 $k = $this->Klartext((string) GetValue($vid));
                 // kein Klartext bekannt: Platzhalter samt davorstehendem Strich weglassen
@@ -272,12 +276,7 @@ class Meldungszentrale extends IPSModule
      */
     public function Klartext(string $Wert)
     {
-        $code = strtoupper(trim($Wert));
-        $zusatz = '';
-        if (preg_match('/^\s*([0-9A-Za-z=\-]{1,4})\s*(?:\((\d+)\))?/', $Wert, $m)) {
-            $code = strtoupper($m[1]);
-            $zusatz = $m[2] ?? '';
-        }
+        [$code, $zusatz] = $this->CodeLesen($Wert);
         $codes = json_decode($this->ReadPropertyString('Codes'), true) ?: [];
         $tabelle = [];
         foreach ($codes as $c) {
@@ -287,6 +286,15 @@ class Meldungszentrale extends IPSModule
             return $tabelle[$code . '/' . $zusatz];
         }
         return $tabelle[$code] ?? '';
+    }
+
+    /** Code und Zusatzcode vom Wertanfang lesen: "H08(1018) 13.11. - now" -> ["H08", "1018"], "H20" -> ["H20", ""] */
+    private function CodeLesen(string $Wert): array
+    {
+        if (preg_match('/^\s*([0-9A-Za-z=\-]{1,4})\s*(?:\((\d+)\))?/', $Wert, $m)) {
+            return [strtoupper($m[1]), $m[2] ?? ''];
+        }
+        return [strtoupper(trim($Wert)), ''];
     }
 
     private function Setzen(string $ident, $wert): void
