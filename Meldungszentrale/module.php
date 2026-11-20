@@ -209,7 +209,9 @@ class Meldungszentrale extends IPSModule
             }
             $text = str_replace('{wert}', GetValueFormatted($vid), $text);
             if (strpos($text, '{klartext}') !== false) {
-                $text = str_replace('{klartext}', $this->Klartext((string) GetValue($vid)), $text);
+                $k = $this->Klartext((string) GetValue($vid));
+                // kein Klartext bekannt: Platzhalter samt davorstehendem Strich weglassen
+                $text = $k === '' ? trim(preg_replace('/\s*[-–:]?\s*\{klartext\}/u', '', $text)) : str_replace('{klartext}', $k, $text);
             }
             $liste[] = ['Schluessel' => 'v' . $vid, 'Text' => $text, 'Stufe' => (int) ($q['Stufe'] ?? self::STUFE_INFO),
                         'Zeit' => IPS_GetVariable($vid)['VariableChanged'], 'Nr' => $n++];
@@ -257,7 +259,7 @@ class Meldungszentrale extends IPSModule
         return $gleich;
     }
 
-    /** Klartext zum Code am Anfang des Werts (z. B. "H08(1018) 13.11. ..." -> "H08"), sonst der Wert selbst */
+    /** Klartext zum Code am Anfang des Werts (z. B. "H08(1018) 13.11. ..." -> Code "H08"); unbekannter Code -> leer */
     public function Klartext(string $Wert)
     {
         $code = preg_match('/^\s*([A-Za-z]{0,2}\d+)/', $Wert, $m) ? strtoupper($m[1]) : trim($Wert);
@@ -267,7 +269,7 @@ class Meldungszentrale extends IPSModule
                 return (string) $c['Text'];
             }
         }
-        return $Wert;
+        return '';
     }
 
     private function Setzen(string $ident, $wert): void
