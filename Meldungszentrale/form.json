@@ -1,0 +1,45 @@
+{
+    "elements": [
+        {
+            "type": "List",
+            "name": "Quellen",
+            "caption": "Quellen (Variablen, die eine Meldung auslösen)",
+            "rowCount": 10,
+            "add": true,
+            "delete": true,
+            "changeOrder": true,
+            "columns": [
+                { "caption": "Variable", "name": "VariableID", "width": "260px", "add": 0, "edit": { "type": "SelectVariable" } },
+                { "caption": "Text ({wert} = angezeigter Wert)", "name": "Text", "width": "auto", "add": "{wert}", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Stufe", "name": "Stufe", "width": "140px", "add": 1,
+                  "edit": { "type": "Select", "options": [
+                      { "caption": "Information", "value": 1 },
+                      { "caption": "Hinweis", "value": 2 },
+                      { "caption": "Warnung", "value": 3 } ] } },
+                { "caption": "Aktiv wenn Wert", "name": "Bedingung", "width": "130px", "add": "ne",
+                  "edit": { "type": "Select", "options": [
+                      { "caption": "=", "value": "eq" },
+                      { "caption": "≠", "value": "ne" } ] } },
+                { "caption": "Wert", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
+            ]
+        },
+        {
+            "type": "List", "name": "Codes", "caption": "Klartexte für Codes (Platzhalter {klartext} im Text)", "rowCount": 6, "add": true, "delete": true,
+            "columns": [
+                { "caption": "Code", "name": "Code", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Klartext", "name": "Text", "width": "auto", "add": "", "edit": { "type": "ValidationTextBox" } }
+            ]
+        },
+        { "type": "ValidationTextBox", "name": "Trennzeichen", "caption": "Trennzeichen in der Laufschrift" },
+        { "type": "ValidationTextBox", "name": "LeerText", "caption": "Text, wenn keine Meldung aktiv ist (leer lassen = leer)" },
+        { "type": "CheckBox", "name": "HTMLListe", "caption": "Variable „Liste“ (HTMLBox) anlegen" },
+        { "type": "CheckBox", "name": "StummAufheben", "caption": "Stummschaltung bei neuer Meldung aufheben" }
+    ],
+    "actions": [
+        { "type": "Button", "caption": "Jetzt aktualisieren", "onClick": "MZ_Aktualisieren($id);" }
+    ],
+    "status": [
+        { "code": 102, "icon": "active", "caption": "Aktiv" },
+        { "code": 201, "icon": "error", "caption": "Mindestens eine Quelle ist keine gültige Variable" }
+    ]
+}
