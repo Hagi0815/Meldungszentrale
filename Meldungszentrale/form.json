@@ -19,14 +19,16 @@
                 { "caption": "Aktiv wenn Wert", "name": "Bedingung", "width": "130px", "add": "ne",
                   "edit": { "type": "Select", "options": [
                       { "caption": "=", "value": "eq" },
-                      { "caption": "≠", "value": "ne" } ] } },
+                      { "caption": "≠", "value": "ne" },
+                      { "caption": "enthält", "value": "in" },
+                      { "caption": "enthält nicht", "value": "notin" } ] } },
                 { "caption": "Wert (mehrere mit |)", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },
         {
             "type": "List", "name": "Codes", "caption": "Klartexte für Codes (Platzhalter {klartext} im Text)", "rowCount": 6, "add": true, "delete": true,
             "columns": [
-                { "caption": "Code", "name": "Code", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Code (z. B. H20 oder 6A/577)", "name": "Code", "width": "200px", "add": "", "edit": { "type": "ValidationTextBox" } },
                 { "caption": "Klartext", "name": "Text", "width": "auto", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },

@@ -18,8 +18,9 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 - **Quellen**: Liste von Variablen. Je Zeile: Variable, Text, Stufe, Bedingung (aktiv wenn Wert `=` oder `≠`), Vergleichswert.
   - Im Text wird `{wert}` durch den angezeigten Wert der Variable ersetzt (GetValueFormatted).
   - Boolean: Vergleichswert `true`/`false`. Zahlen: z. B. `0`. Text: genauer Vergleich, leer = leerer Text.
+  - Bedingungen: `=`, `≠`, `enthält`, `enthält nicht` (Text, ohne Groß/Klein). Beispiel EMS-ESP-„lastcode“: aktiv, wenn er `now` enthält (Störung steht noch an).
   - Mehrere Vergleichswerte mit `|` trennen: `|-` heißt „leer oder -“.
-- **Klartexte für Codes**: Liste Code → Text, im Text per `{klartext}` (z. B. Buderus-Wartungscodes).
+- **Klartexte für Codes**: Liste Code → Text, im Text per `{klartext}`. Code wird vom Wertanfang gelesen (`H08(1018) …` → `H08/1018`, sonst `H08`). Unbekannter Code → Klartext entfällt.
 - **Trennzeichen** (Standard ` · `), **Text wenn keine Meldung** (Standard leer).
 - **Liste (HTMLBox)** optional, **Stummschaltung bei neuer Meldung aufheben** optional.
 

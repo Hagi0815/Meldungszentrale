@@ -228,17 +228,24 @@ class Meldungszentrale extends IPSModule
         return $liste;
     }
 
-    /** Bedingung: 'eq' = aktiv wenn Wert gleich, 'ne' = aktiv wenn Wert ungleich. Mehrere Werte mit | trennen (z. B. "|-" = leer oder -) */
+    /**
+     * Bedingung: 'eq' = gleich, 'ne' = ungleich, 'in' = Text enthält, 'notin' = Text enthält nicht.
+     * Mehrere Werte mit | trennen (z. B. "|-" = leer oder -).
+     */
     private function IstAktiv(int $vid, string $bedingung, string $wert): bool
     {
+        $enthaelt = in_array($bedingung, ['in', 'notin'], true);
         $gleich = false;
         foreach (explode('|', $wert) as $w) {
-            if ($this->Gleich($vid, $w)) {
+            $treffer = $enthaelt
+                ? ($w !== '' && mb_stripos(GetValueFormatted($vid), trim($w)) !== false)
+                : $this->Gleich($vid, $w);
+            if ($treffer) {
                 $gleich = true;
                 break;
             }
         }
-        return $bedingung === 'eq' ? $gleich : !$gleich;
+        return in_array($bedingung, ['eq', 'in'], true) ? $gleich : !$gleich;
     }
 
     private function Gleich(int $vid, string $wert): bool
@@ -259,17 +266,27 @@ class Meldungszentrale extends IPSModule
         return $gleich;
     }
 
-    /** Klartext zum Code am Anfang des Werts (z. B. "H08(1018) 13.11. ..." -> Code "H08"); unbekannter Code -> leer */
+    /**
+     * Klartext zum Code am Anfang des Werts, z. B. "H08(1018) 13.11. ..." oder " 6A(577) ...".
+     * Gesucht wird zuerst "Code/Zusatzcode" (z. B. "6A/577"), dann nur "Code" (z. B. "6A"). Unbekannt -> leer.
+     */
     public function Klartext(string $Wert)
     {
-        $code = preg_match('/^\s*([A-Za-z]{0,2}\d+)/', $Wert, $m) ? strtoupper($m[1]) : trim($Wert);
-        $codes = json_decode($this->ReadPropertyString('Codes'), true) ?: [];
-        foreach ($codes as $c) {
-            if (strtoupper(trim((string) $c['Code'])) === $code) {
-                return (string) $c['Text'];
-            }
+        $code = strtoupper(trim($Wert));
+        $zusatz = '';
+        if (preg_match('/^\s*([0-9A-Za-z=\-]{1,4})\s*(?:\((\d+)\))?/', $Wert, $m)) {
+            $code = strtoupper($m[1]);
+            $zusatz = $m[2] ?? '';
         }
-        return '';
+        $codes = json_decode($this->ReadPropertyString('Codes'), true) ?: [];
+        $tabelle = [];
+        foreach ($codes as $c) {
+            $tabelle[strtoupper(str_replace(' ', '', (string) $c['Code']))] = (string) $c['Text'];
+        }
+        if ($zusatz !== '' && isset($tabelle[$code . '/' . $zusatz])) {
+            return $tabelle[$code . '/' . $zusatz];
+        }
+        return $tabelle[$code] ?? '';
     }
 
     private function Setzen(string $ident, $wert): void
