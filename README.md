@@ -17,10 +17,11 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 
 - **Quellen**: Liste von Variablen. Je Zeile: Variable, Text, Stufe, Bedingung (aktiv wenn Wert `=` oder `≠`), Vergleichswert.
   - Im Text wird `{wert}` durch den angezeigten Wert der Variable ersetzt (GetValueFormatted).
+  - `{var:ID}` = angezeigter Wert einer anderen Variable (z. B. Klartext aus einem Auswerte-Skript). „Unbekannt…“, „Kein gültiger…“ oder „-“ werden samt Strich weggelassen.
   - `{dwd:ID}` = einzelne Warnungen aus der HTML-Tabelle des Moduls „Weather Warning“ (Variable „Warnmeldungen“), z. B. `Frost, Glätte, Markante Glätte bis Sa 09:00`.
   - `{code}` = nur der Code vom Wertanfang, z. B. `H08(1018) 13.11.2026 12:21 - now` → `H08 (1018)`.
   - Boolean: Vergleichswert `true`/`false`. Zahlen: z. B. `0`. Text: genauer Vergleich, leer = leerer Text.
-  - Bedingungen: `=`, `≠`, `enthält`, `enthält nicht` (Text, ohne Groß/Klein). Beispiel EMS-ESP-„lastcode“: aktiv, wenn er `now` enthält (Störung steht noch an).
+  - Bedingungen: `=`, `≠`, `enthält`, `enthält nicht`, `passt (nicht) zu Muster` (regulärer Ausdruck, z. B. `/^\s*H\d+.*now/i`) (Text, ohne Groß/Klein). Beispiel EMS-ESP-„lastcode“: aktiv, wenn er `now` enthält (Störung steht noch an).
   - Mehrere Vergleichswerte mit `|` trennen: `|-` heißt „leer oder -“.
 - **Klartexte für Codes**: Liste Code → Text, im Text per `{klartext}`. Code wird vom Wertanfang gelesen (`H08(1018) …` → `H08/1018`, sonst `H08`). Unbekannter Code → Klartext entfällt.
 - **Trennzeichen** (Standard ` · `), **Text wenn keine Meldung** (Standard leer).

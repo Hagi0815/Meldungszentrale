@@ -21,7 +21,9 @@
                       { "caption": "=", "value": "eq" },
                       { "caption": "≠", "value": "ne" },
                       { "caption": "enthält", "value": "in" },
-                      { "caption": "enthält nicht", "value": "notin" } ] } },
+                      { "caption": "enthält nicht", "value": "notin" },
+                      { "caption": "passt zu Muster", "value": "rx" },
+                      { "caption": "passt nicht zu Muster", "value": "notrx" } ] } },
                 { "caption": "Wert (mehrere mit |)", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },

@@ -92,7 +92,7 @@ class Meldungszentrale extends IPSModule
             } else {
                 $fehler = true;
             }
-            if (preg_match_all('/\{dwd:(\d+)\}/', (string) ($q['Text'] ?? ''), $mm)) {
+            if (preg_match_all('/\{(?:dwd|var):(\d+)\}/', (string) ($q['Text'] ?? ''), $mm)) {
                 foreach ($mm[1] as $zid) {
                     if (IPS_VariableExists((int) $zid)) {
                         $this->RegisterMessage((int) $zid, VM_UPDATE);
@@ -225,6 +225,16 @@ class Meldungszentrale extends IPSModule
                 $t = $this->DwdText((int) $m[1]);
                 return $t !== '' ? $t : GetValueFormatted($vid);
             }, $text);
+            // {var:ID}: angezeigter Wert einer anderen Variable (z. B. Klartext aus einem Auswerte-Skript);
+            // leere oder nichtssagende Texte ("Unbekannt…", "Kein gültiger…", "-") samt davorstehendem Strich weglassen
+            $text = preg_replace_callback('/\s*([-–:]\s*)?\{var:(\d+)\}/u', function ($m) {
+                $id = (int) $m[2];
+                $t = IPS_VariableExists($id) ? trim((string) GetValueFormatted($id)) : '';
+                if ($t === '' || $t === '-' || preg_match('/^(unbekannt|kein gültig|keine bekannte)/iu', $t)) {
+                    return '';
+                }
+                return ($m[1] !== '' ? ' ' . trim($m[1]) . ' ' : ' ') . $t;
+            }, $text);
             if (strpos($text, '{code}') !== false) {
                 [$c, $z] = $this->CodeLesen((string) GetValue($vid));
                 $text = str_replace('{code}', $z !== '' ? $c . ' (' . $z . ')' : $c, $text);
@@ -255,6 +265,11 @@ class Meldungszentrale extends IPSModule
      */
     private function IstAktiv(int $vid, string $bedingung, string $wert): bool
     {
+        // 'rx' = Text passt zum regulären Ausdruck, 'notrx' = passt nicht (Wert z. B. "/^\s*H\d+.*now/i")
+        if (in_array($bedingung, ['rx', 'notrx'], true)) {
+            $passt = @preg_match($wert, (string) GetValueFormatted($vid)) === 1;
+            return $bedingung === 'rx' ? $passt : !$passt;
+        }
         $enthaelt = in_array($bedingung, ['in', 'notin'], true);
         $gleich = false;
         foreach (explode('|', $wert) as $w) {

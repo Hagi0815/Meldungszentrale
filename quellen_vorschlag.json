@@ -1,11 +1,12 @@
 [
     {"VariableID": 45913, "Text": "Wetter: {dwd:23494}", "Stufe": 3, "Bedingung": "ne", "Wert": "0"},
-    {"VariableID": 40829, "Text": "Störung Kessel: {code} – {klartext}", "Stufe": 3, "Bedingung": "in", "Wert": "now"},
+    {"VariableID": 40829, "Text": "Störung Kessel: {code} – {var:59039}", "Stufe": 3, "Bedingung": "rx", "Wert": "/^\\s*[^H\\s][^(]*\\(.*now/i"},
+    {"VariableID": 40829, "Text": "Wartung Kessel: {code} – {var:59039}", "Stufe": 1, "Bedingung": "rx", "Wert": "/^\\s*H\\d+.*now/i"},
     {"VariableID": 40374, "Text": "Störung Regler RC310: {code} – {klartext}", "Stufe": 3, "Bedingung": "in", "Wert": "now"},
     {"VariableID": 15675, "Text": "Wohnzimmer lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 30409, "Text": "Küche lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 49968, "Text": "Schlafzimmer lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 25481, "Text": "Büro lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
     {"VariableID": 43329, "Text": "Bad lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},
-    {"VariableID": 37965, "Text": "Wartung Heizung: {code} – {klartext}", "Stufe": 1, "Bedingung": "ne", "Wert": "|-"}
+    {"VariableID": 37965, "Text": "Wartung Heizung: {code} – {var:59666}", "Stufe": 1, "Bedingung": "ne", "Wert": "|-"}
 ]
