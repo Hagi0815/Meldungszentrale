@@ -34,6 +34,7 @@
         },
         { "type": "ValidationTextBox", "name": "Trennzeichen", "caption": "Trennzeichen in der Laufschrift" },
         { "type": "ValidationTextBox", "name": "LeerText", "caption": "Text, wenn keine Meldung aktiv ist (leer lassen = leer)" },
+        { "type": "NumberSpinner", "name": "Tempo", "caption": "Laufschrift HTML: Sekunden pro Zeichen", "digits": 2, "minimum": 0.05, "maximum": 1 },
         { "type": "CheckBox", "name": "HTMLListe", "caption": "Variable „Liste“ (HTMLBox) anlegen" },
         { "type": "CheckBox", "name": "StummAufheben", "caption": "Stummschaltung bei neuer Meldung aufheben" }
     ],

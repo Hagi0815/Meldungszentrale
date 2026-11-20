@@ -1,5 +1,5 @@
 [
-    {"VariableID": 45913, "Text": "{wert}", "Stufe": 3, "Bedingung": "ne", "Wert": "0"},
+    {"VariableID": 45913, "Text": "Wetter: {dwd:23494}", "Stufe": 3, "Bedingung": "ne", "Wert": "0"},
     {"VariableID": 40829, "Text": "Störung Kessel: {code} – {klartext}", "Stufe": 3, "Bedingung": "in", "Wert": "now"},
     {"VariableID": 40374, "Text": "Störung Regler RC310: {code} – {klartext}", "Stufe": 3, "Bedingung": "in", "Wert": "now"},
     {"VariableID": 15675, "Text": "Wohnzimmer lüften", "Stufe": 2, "Bedingung": "eq", "Wert": "true"},

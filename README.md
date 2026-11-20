@@ -17,6 +17,7 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 
 - **Quellen**: Liste von Variablen. Je Zeile: Variable, Text, Stufe, Bedingung (aktiv wenn Wert `=` oder `≠`), Vergleichswert.
   - Im Text wird `{wert}` durch den angezeigten Wert der Variable ersetzt (GetValueFormatted).
+  - `{dwd:ID}` = einzelne Warnungen aus der HTML-Tabelle des Moduls „Weather Warning“ (Variable „Warnmeldungen“), z. B. `Frost, Glätte, Markante Glätte bis Sa 09:00`.
   - `{code}` = nur der Code vom Wertanfang, z. B. `H08(1018) 13.11.2026 12:21 - now` → `H08 (1018)`.
   - Boolean: Vergleichswert `true`/`false`. Zahlen: z. B. `0`. Text: genauer Vergleich, leer = leerer Text.
   - Bedingungen: `=`, `≠`, `enthält`, `enthält nicht` (Text, ohne Groß/Klein). Beispiel EMS-ESP-„lastcode“: aktiv, wenn er `now` enthält (Störung steht noch an).
@@ -30,6 +31,7 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 | Ident | Name | Typ | Profil |
 |---|---|---|---|
 | Laufschrift | Laufschrift | String | – |
+| LaufschriftHTML | Laufschrift HTML | String | ~HTMLBox (jede Meldung in ihrer Stufenfarbe, läuft per CSS) |
 | HoechsteStufe | Höchste Stufe | Integer | MZ.Stufe |
 | Anzahl | Anzahl | Integer | – |
 | Stumm | Stumm | Boolean, mit Aktion | ~Switch |

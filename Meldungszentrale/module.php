@@ -33,6 +33,8 @@ class Meldungszentrale extends IPSModule
         $this->RegisterPropertyString('Quellen', '[]');
         $this->RegisterPropertyString('Trennzeichen', ' · ');
         $this->RegisterPropertyString('LeerText', '');
+        // Sekunden pro Zeichen für die Laufanimation der HTML-Laufschrift
+        $this->RegisterPropertyFloat('Tempo', 0.18);
         $this->RegisterPropertyBoolean('HTMLListe', false);
         $this->RegisterPropertyBoolean('StummAufheben', false);
         // Klartexte für Codes, z. B. Buderus-Wartungscodes: [{"Code": "H20", "Text": "..."}]
@@ -62,6 +64,7 @@ class Meldungszentrale extends IPSModule
         $this->ProfilAnlegen();
 
         $this->MaintainVariable('Laufschrift', $this->Translate('Laufschrift'), VARIABLETYPE_STRING, '', 10, true);
+        $this->MaintainVariable('LaufschriftHTML', $this->Translate('Laufschrift HTML'), VARIABLETYPE_STRING, '~HTMLBox', 15, true);
         $this->MaintainVariable('HoechsteStufe', $this->Translate('Höchste Stufe'), VARIABLETYPE_INTEGER, self::PROFIL_STUFE, 20, true);
         $this->MaintainVariable('Anzahl', $this->Translate('Anzahl'), VARIABLETYPE_INTEGER, '', 30, true);
         $this->MaintainVariable('Stumm', $this->Translate('Stumm'), VARIABLETYPE_BOOLEAN, '~Switch', 40, true);
@@ -88,6 +91,14 @@ class Meldungszentrale extends IPSModule
                 $this->RegisterReference($vid);
             } else {
                 $fehler = true;
+            }
+            if (preg_match_all('/\{dwd:(\d+)\}/', (string) ($q['Text'] ?? ''), $mm)) {
+                foreach ($mm[1] as $zid) {
+                    if (IPS_VariableExists((int) $zid)) {
+                        $this->RegisterMessage((int) $zid, VM_UPDATE);
+                        $this->RegisterReference((int) $zid);
+                    }
+                }
             }
         }
         $this->SetStatus($fehler ? 201 : 102);
@@ -168,6 +179,7 @@ class Meldungszentrale extends IPSModule
         $hoechste = count($liste) ? max(array_column($liste, 'Stufe')) : self::STUFE_KEINE;
 
         $this->Setzen('Laufschrift', $laufschrift);
+        $this->Setzen('LaufschriftHTML', $this->LaufHtml($liste));
         $this->Setzen('HoechsteStufe', $hoechste);
         $this->Setzen('Anzahl', count($liste));
         if ($this->ReadPropertyBoolean('HTMLListe')) {
@@ -208,6 +220,11 @@ class Meldungszentrale extends IPSModule
                 $text = IPS_GetName($vid) . ': {wert}';
             }
             $text = str_replace('{wert}', GetValueFormatted($vid), $text);
+            // {dwd:ID}: einzelne DWD-Warnungen; ist die Tabelle leer, der angezeigte Wert der Quelle
+            $text = preg_replace_callback('/\{dwd:(\d+)\}/', function ($m) use ($vid) {
+                $t = $this->DwdText((int) $m[1]);
+                return $t !== '' ? $t : GetValueFormatted($vid);
+            }, $text);
             if (strpos($text, '{code}') !== false) {
                 [$c, $z] = $this->CodeLesen((string) GetValue($vid));
                 $text = str_replace('{code}', $z !== '' ? $c . ' (' . $z . ')' : $c, $text);
@@ -303,6 +320,66 @@ class Meldungszentrale extends IPSModule
         if ($id && GetValue($id) !== $wert) {
             $this->SetValue($ident, $wert);
         }
+    }
+
+    /**
+     * Einzelne DWD-Warnungen aus der HTML-Tabelle des Moduls „Weather Warning“ lesen:
+     * "Warnung vor Sturmböen" + "Fr, 20.Nov, 21:00 - Sa, 21.Nov, 09:00 Uhr" -> "Sturmböen bis Sa 09:00"
+     */
+    private function DwdText(int $vid): string
+    {
+        if (!IPS_VariableExists($vid)) {
+            return '';
+        }
+        $h = (string) GetValue($vid);
+        if (!preg_match_all("/class=['\"]hl['\"][^>]*>(.*?)<\/div>\s*<div class=['\"]ts['\"][^>]*>(.*?)<\/div>/s", $h, $m, PREG_SET_ORDER)) {
+            return '';
+        }
+        // gleiche Endzeit zusammenfassen: "Frost, Glätte bis Sa 09:00"
+        $gruppen = [];
+        foreach ($m as $e) {
+            $was = trim(html_entity_decode(strip_tags($e[1]), ENT_QUOTES, 'UTF-8'));
+            $was = preg_replace('/^(Amtliche\s+)?(Unwetter)?[Ww]arnung vor\s+/iu', '', $was);
+            $was = preg_replace('/^(\p{L}+)er\s+(?=\p{Lu})/u', '$1e ', $was);   // "Markanter Glätte" -> "Markante Glätte"
+            $bis = '';
+            if (preg_match('/-\s*([A-Za-z]{2}),\s*[\d.\p{L}]+,\s*(\d{1,2}:\d{2})/u', $e[2], $b)) {
+                $bis = $b[1] . ' ' . $b[2];
+            }
+            if ($was !== '' && !in_array($was, $gruppen[$bis] ?? [], true)) {
+                $gruppen[$bis][] = $was;
+            }
+        }
+        $teile = [];
+        foreach ($gruppen as $bis => $was) {
+            $teile[] = implode(', ', $was) . ($bis !== '' ? ' bis ' . $bis : '');
+        }
+        return implode('; ', $teile);
+    }
+
+    /** HTML-Laufschrift: jede Meldung in ihrer Stufenfarbe, Schriftgröße folgt der Höhe der HTMLBox */
+    private function LaufHtml(array $liste): string
+    {
+        $css = '<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;height:100%}'
+            . '.mz{position:absolute;top:0;left:0;height:100vh;line-height:100vh;white-space:nowrap;'
+            . 'font-family:Roboto,Arial,sans-serif;font-weight:bold;font-size:58vh}';
+        if (!count($liste)) {
+            $leer = $this->ReadPropertyString('LeerText');
+            return $css . '</style><div class="mz" style="padding-left:2vh;color:#8d9aab">' . htmlspecialchars($leer) . '</div>';
+        }
+        $sep = '<span style="color:#8d9aab">' . htmlspecialchars($this->ReadPropertyString('Trennzeichen')) . '</span>';
+        $teile = [];
+        $zeichen = 0;
+        foreach ($liste as $e) {
+            $farbe = sprintf('#%06X', self::STUFEN[$e['Stufe']][1] ?? 0x8D9AAB);
+            $teile[] = '<span style="color:' . $farbe . '">' . htmlspecialchars($e['Text']) . '</span>';
+            $zeichen += mb_strlen($e['Text']) + 3;
+        }
+        $dauer = max(8, round($zeichen * $this->ReadPropertyFloat('Tempo'), 1));
+        return $css
+            . '.lauf{display:inline-block;padding-left:100vw;animation:mz ' . $dauer . 's linear infinite;-webkit-animation:mz ' . $dauer . 's linear infinite}'
+            . '@keyframes mz{from{transform:translateX(0)}to{transform:translateX(-100%)}}'
+            . '@-webkit-keyframes mz{from{-webkit-transform:translateX(0)}to{-webkit-transform:translateX(-100%)}}'
+            . '</style><div class="mz"><span class="lauf">' . implode($sep, $teile) . '</span></div>';
     }
 
     private function Html(array $liste): string
