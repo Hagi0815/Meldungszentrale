@@ -24,7 +24,12 @@
                       { "caption": "enthält nicht", "value": "notin" },
                       { "caption": "passt zu Muster", "value": "rx" },
                       { "caption": "passt nicht zu Muster", "value": "notrx" } ] } },
-                { "caption": "Wert (mehrere mit |)", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } }
+                { "caption": "Wert (mehrere mit |)", "name": "Wert", "width": "120px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Gruppe", "name": "Gruppe", "width": "110px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Titel (Chip/Überschrift)", "name": "Titel", "width": "200px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Meldung", "name": "Meldung", "width": "160px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Ursache", "name": "Ursache", "width": "160px", "add": "", "edit": { "type": "ValidationTextBox" } },
+                { "caption": "Abhilfe", "name": "Abhilfe", "width": "160px", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },
         {
@@ -34,6 +39,7 @@
                 { "caption": "Klartext", "name": "Text", "width": "auto", "add": "", "edit": { "type": "ValidationTextBox" } }
             ]
         },
+        { "type": "ValidationTextBox", "name": "DetailGruppe", "caption": "Gruppe für „… Chips HTML“ und „… Meldungen HTML“ (leer = aus)" },
         { "type": "ValidationTextBox", "name": "Trennzeichen", "caption": "Trennzeichen in der Laufschrift" },
         { "type": "ValidationTextBox", "name": "LeerText", "caption": "Text, wenn keine Meldung aktiv ist (leer lassen = leer)" },
         { "type": "NumberSpinner", "name": "Tempo", "caption": "Laufschrift HTML: Sekunden pro Zeichen", "digits": 2, "minimum": 0.05, "maximum": 1 },

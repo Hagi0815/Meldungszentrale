@@ -24,6 +24,8 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
   - Bedingungen: `=`, `≠`, `enthält`, `enthält nicht`, `passt (nicht) zu Muster` (regulärer Ausdruck, z. B. `/^\s*H\d+.*now/i`) (Text, ohne Groß/Klein). Beispiel EMS-ESP-„lastcode“: aktiv, wenn er `now` enthält (Störung steht noch an).
   - Mehrere Vergleichswerte mit `|` trennen: `|-` heißt „leer oder -“.
 - **Klartexte für Codes**: Liste Code → Text, im Text per `{klartext}`. Code wird vom Wertanfang gelesen (`H08(1018) …` → `H08/1018`, sonst `H08`). Unbekannter Code → Klartext entfällt.
+- **Detailfelder je Quelle (optional)**: `Gruppe` (z. B. `Heizung`), `Titel` (Chip/Überschrift, z. B. `Wartung Kessel {code}`), `Meldung`, `Ursache`, `Abhilfe` (z. B. `{var:59039}`). Platzhalter werden hier ungefiltert ersetzt; leer oder `-` wird als `–` angezeigt.
+- **Gruppe für Detail-HTML** (Standard `Heizung`, leer = aus): legt `<Gruppe> Chips HTML` und `<Gruppe> Meldungen HTML` an.
 - **Trennzeichen** (Standard ` · `), **Text wenn keine Meldung** (Standard leer).
 - **Liste (HTMLBox)** optional, **Stummschaltung bei neuer Meldung aufheben** optional.
 
@@ -37,6 +39,8 @@ Das Profil `MZ.Stufe` wird vom Modul angelegt.
 | Anzahl | Anzahl | Integer | – |
 | Stumm | Stumm | Boolean, mit Aktion | ~Switch |
 | Liste | Liste (optional) | String | ~HTMLBox |
+| GruppeChipsHTML | <Gruppe> Chips HTML | String | ~HTMLBox (je aktive Meldung der Gruppe ein Chip in Stufenfarbe, eine Zeile, Schrift folgt der Boxhöhe) |
+| GruppeMeldungenHTML | <Gruppe> Meldungen HTML | String | ~HTMLBox (je Meldung ein Block mit farbigem Rand: Titel, Meldung, Ursache/Abhilfe als Laufschrift; sonst „Keine Meldungen“) |
 
 Sortierung: Warnung vor Hinweis vor Information, innerhalb einer Stufe in Listenreihenfolge.
 Neu berechnet wird bei jeder Wertänderung einer Quelle (VM_UPDATE) und bei jedem Aufruf der Funktionen.

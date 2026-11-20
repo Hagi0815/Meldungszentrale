@@ -39,6 +39,8 @@ class Meldungszentrale extends IPSModule
         $this->RegisterPropertyBoolean('StummAufheben', false);
         // Klartexte für Codes, z. B. Buderus-Wartungscodes: [{"Code": "H20", "Text": "..."}]
         $this->RegisterPropertyString('Codes', '[]');
+        // Gruppe für die Detail-HTML-Variablen (Chips + Meldungsblöcke), z. B. "Heizung"; leer = keine Detail-Variablen
+        $this->RegisterPropertyString('DetailGruppe', 'Heizung');
 
         // Meldungen aus Skripten: {"<id>": {"Text": "...", "Stufe": 1..3, "Zeit": 1700000000}}
         $this->RegisterAttributeString('Manuell', '{}');
@@ -70,6 +72,9 @@ class Meldungszentrale extends IPSModule
         $this->MaintainVariable('Stumm', $this->Translate('Stumm'), VARIABLETYPE_BOOLEAN, '~Switch', 40, true);
         $this->EnableAction('Stumm');
         $this->MaintainVariable('Liste', $this->Translate('Liste'), VARIABLETYPE_STRING, '~HTMLBox', 50, $this->ReadPropertyBoolean('HTMLListe'));
+        $gruppe = trim($this->ReadPropertyString('DetailGruppe'));
+        $this->MaintainVariable('GruppeChipsHTML', $gruppe . ' Chips HTML', VARIABLETYPE_STRING, '~HTMLBox', 60, $gruppe !== '');
+        $this->MaintainVariable('GruppeMeldungenHTML', $gruppe . ' Meldungen HTML', VARIABLETYPE_STRING, '~HTMLBox', 70, $gruppe !== '');
 
         // alte Registrierungen lösen (außer Kernel-Start)
         foreach ($this->GetMessageList() as $senderID => $messages) {
@@ -92,7 +97,8 @@ class Meldungszentrale extends IPSModule
             } else {
                 $fehler = true;
             }
-            if (preg_match_all('/\{(?:dwd|var):(\d+)\}/', (string) ($q['Text'] ?? ''), $mm)) {
+            $alle = implode(' ', array_map('strval', [$q['Text'] ?? '', $q['Titel'] ?? '', $q['Meldung'] ?? '', $q['Ursache'] ?? '', $q['Abhilfe'] ?? '']));
+            if (preg_match_all('/\{(?:dwd|var):(\d+)\}/', $alle, $mm)) {
                 foreach ($mm[1] as $zid) {
                     if (IPS_VariableExists((int) $zid)) {
                         $this->RegisterMessage((int) $zid, VM_UPDATE);
@@ -185,6 +191,14 @@ class Meldungszentrale extends IPSModule
         if ($this->ReadPropertyBoolean('HTMLListe')) {
             $this->Setzen('Liste', $this->Html($liste));
         }
+        $gruppe = trim($this->ReadPropertyString('DetailGruppe'));
+        if ($gruppe !== '') {
+            $g = array_values(array_filter($liste, function ($e) use ($gruppe) {
+                return strcasecmp((string) ($e['Gruppe'] ?? ''), $gruppe) === 0;
+            }));
+            $this->Setzen('GruppeChipsHTML', $this->ChipsHtml($g));
+            $this->Setzen('GruppeMeldungenHTML', $this->BloeckeHtml($g));
+        }
 
         // neue Meldung? -> Stummschaltung optional aufheben
         $jetzt = array_column($liste, 'Schluessel');
@@ -244,8 +258,14 @@ class Meldungszentrale extends IPSModule
                 // kein Klartext bekannt: Platzhalter samt davorstehendem Strich weglassen
                 $text = $k === '' ? trim(preg_replace('/\s*[-–:]?\s*\{klartext\}/u', '', $text)) : str_replace('{klartext}', $k, $text);
             }
+            // Detailfelder (optional): Gruppe, Titel (Chip + Überschrift), Meldung, Ursache, Abhilfe – Platzhalter roh ersetzt
+            $titel = trim($this->Roh((string) ($q['Titel'] ?? ''), $vid));
             $liste[] = ['Schluessel' => 'v' . $vid, 'Text' => $text, 'Stufe' => (int) ($q['Stufe'] ?? self::STUFE_INFO),
-                        'Zeit' => IPS_GetVariable($vid)['VariableChanged'], 'Nr' => $n++];
+                        'Zeit' => IPS_GetVariable($vid)['VariableChanged'], 'Nr' => $n++,
+                        'Gruppe' => trim((string) ($q['Gruppe'] ?? '')), 'Titel' => $titel !== '' ? $titel : $text,
+                        'Meldung' => $this->Roh((string) ($q['Meldung'] ?? ''), $vid),
+                        'Ursache' => $this->Roh((string) ($q['Ursache'] ?? ''), $vid),
+                        'Abhilfe' => $this->Roh((string) ($q['Abhilfe'] ?? ''), $vid)];
         }
         $m = json_decode($this->ReadAttributeString('Manuell'), true) ?: [];
         foreach ($m as $id => $e) {
@@ -395,6 +415,83 @@ class Meldungszentrale extends IPSModule
             . '@keyframes mz{from{transform:translateX(0)}to{transform:translateX(-100%)}}'
             . '@-webkit-keyframes mz{from{-webkit-transform:translateX(0)}to{-webkit-transform:translateX(-100%)}}'
             . '</style><div class="mz"><span class="lauf">' . implode($sep, $teile) . '</span></div>';
+    }
+
+    /** Platzhalter ohne Filter ersetzen (für Titel/Meldung/Ursache/Abhilfe): {wert}, {code}, {klartext}, {var:ID}, {dwd:ID} */
+    private function Roh(string $t, int $vid): string
+    {
+        if ($t === '') {
+            return '';
+        }
+        $t = str_replace('{wert}', (string) GetValueFormatted($vid), $t);
+        if (strpos($t, '{code}') !== false) {
+            [$c, $z] = $this->CodeLesen((string) GetValue($vid));
+            $t = str_replace('{code}', $z !== '' ? $c . ' (' . $z . ')' : $c, $t);
+        }
+        if (strpos($t, '{klartext}') !== false) {
+            $t = str_replace('{klartext}', $this->Klartext((string) GetValue($vid)), $t);
+        }
+        $t = preg_replace_callback('/\{var:(\d+)\}/', function ($m) {
+            return IPS_VariableExists((int) $m[1]) ? trim((string) GetValueFormatted((int) $m[1])) : '';
+        }, $t);
+        $t = preg_replace_callback('/\{dwd:(\d+)\}/', function ($m) {
+            return $this->DwdText((int) $m[1]);
+        }, $t);
+        return trim($t);
+    }
+
+    private function Farbe(int $stufe): string
+    {
+        return sprintf('#%06X', self::STUFEN[$stufe][1] ?? 0x8D9AAB);
+    }
+
+    /** Chips je aktiver Meldung der Gruppe in Stufenfarbe (eine Zeile, Schriftgröße folgt der Höhe der HTMLBox) */
+    private function ChipsHtml(array $liste): string
+    {
+        $h = '<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;height:100%}'
+            . '.c{display:flex;flex-wrap:nowrap;gap:2vh;height:100vh;align-items:center;font-family:Roboto,Arial,sans-serif;font-weight:bold;font-size:42vh}'
+            . '.c span{white-space:nowrap;background:#2a3442;border:0.12em solid;border-radius:0.6em;padding:0.1em 0.6em;line-height:1.3}</style><div class="c">';
+        foreach ($liste as $e) {
+            $f = $this->Farbe($e['Stufe']);
+            $h .= '<span style="color:' . $f . ';border-color:' . $f . '">' . htmlspecialchars($e['Titel']) . '</span>';
+        }
+        return $h . '</div>';
+    }
+
+    /** Meldungsblöcke der Gruppe: farbiger Rand, Überschrift, „Meldung“ als Text, „Ursache“ und „Abhilfe“ als Laufschrift */
+    private function BloeckeHtml(array $liste): string
+    {
+        $h = '<style>html,body{margin:0;padding:0;background:transparent;color:#e8edf3;font-family:Roboto,Arial,sans-serif;font-size:3.2vw}'
+            . '.b{border:0.18em solid;border-radius:0.6em;padding:0.4em 0.7em;margin:0 0 0.6em 0;background:#1c2430}'
+            . '.t{font-weight:bold;font-size:1.15em;margin-bottom:0.25em}'
+            . '.z{display:flex;align-items:baseline;gap:0.5em;margin-top:0.15em}'
+            . '.l{flex:0 0 5.2em;color:#8d9aab}'
+            . '.w{flex:1 1 auto;overflow:hidden;white-space:nowrap}'
+            . '.w span{display:inline-block;padding-left:100%;animation:mzl linear infinite;-webkit-animation:mzl linear infinite}'
+            . '.k{color:#8d9aab}'
+            . '@keyframes mzl{from{transform:translateX(0)}to{transform:translateX(-100%)}}'
+            . '@-webkit-keyframes mzl{from{-webkit-transform:translateX(0)}to{-webkit-transform:translateX(-100%)}}</style>';
+        if (!count($liste)) {
+            return $h . '<div class="k">Keine Meldungen</div>';
+        }
+        $tempo = $this->ReadPropertyFloat('Tempo');
+        $leer = function (string $t): string {
+            $t = trim($t);
+            return ($t === '' || $t === '-') ? '–' : $t;
+        };
+        foreach ($liste as $e) {
+            $f = $this->Farbe($e['Stufe']);
+            $h .= '<div class="b" style="border-color:' . $f . '"><div class="t" style="color:' . $f . '">' . htmlspecialchars($e['Titel']) . '</div>'
+                . '<div class="z"><div class="l">Meldung</div><div>' . htmlspecialchars($leer($e['Meldung'])) . '</div></div>';
+            foreach (['Ursache', 'Abhilfe'] as $feld) {
+                $t = $leer($e[$feld]);
+                $dauer = max(6, round(mb_strlen($t) * $tempo * 1.5, 1));
+                $h .= '<div class="z"><div class="l">' . $feld . '</div><div class="w"><span style="animation-duration:' . $dauer
+                    . 's;-webkit-animation-duration:' . $dauer . 's">' . htmlspecialchars($t) . '</span></div></div>';
+            }
+            $h .= '</div>';
+        }
+        return $h;
     }
 
     private function Html(array $liste): string
